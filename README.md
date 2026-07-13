@@ -3,6 +3,8 @@
 # Description
 Simulate the dinining philosphers problem to demonstrate an understanding of threading and mutexes, and you know advance in the 42 CC.
 
+TODO: add generic description of the dining philophers problem.
+
 # Instructions
 Run `make` to build the `./philo` program.
 
@@ -12,4 +14,5 @@ Alternatively you can add one more (positive) integer that represents the number
 
 # Resources
  - pthreads programming (ISBN 978-1-56592-115-3)
+ - man 7 pthreads
  - my fellow students were by far the most valuable resources <3
