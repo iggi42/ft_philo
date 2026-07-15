@@ -14,21 +14,24 @@
 
 bool	init_frk(t_frk *frk)
 {
-	if(!frk) return false;
-	frk->in_use = false;
-	return pthread_mutex_init(&frk->mutex, NULL) == 0;
+	if (!frk)
+		return (false);
+	frk->val = false;
+	return (pthread_mutex_init(&frk->mutex, NULL) == 0);
 }
 
 bool	pickup(t_frk *frk)
 {
-	if(!pthread_mutex_lock(&frk->mutex)) return false;
-	frk->in_use = true;
-	return pthread_mutex_unlock(&frk->mutex) == 0;
+	if (!pthread_mutex_lock(&frk->mutex))
+		return (false);
+	frk->val = true;
+	return (pthread_mutex_unlock(&frk->mutex) == 0);
 }
 
 bool	putdown(t_frk *frk)
 {
-	if(!pthread_mutex_lock(&frk->mutex)) return false;
-	frk->in_use = false;
-	return pthread_mutex_unlock(&frk->mutex) == 0;
+	if (!pthread_mutex_lock(&frk->mutex))
+		return (false);
+	frk->val = false;
+	return (pthread_mutex_unlock(&frk->mutex) == 0);
 }

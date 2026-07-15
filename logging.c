@@ -29,7 +29,7 @@ void log_thinking(t_philo *philo)
 
 void log_animated(t_philo *philo)
 {
-	printf("%ld: [%d] has awoken. left(%p) right(%p)\n",
+	printf("%ld: [%d] was born. left(%p) right(%p)\n",
 		read_timer(), (int) philo->id, philo->left, philo->right
 	);
 }

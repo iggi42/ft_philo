@@ -11,13 +11,11 @@
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdlib.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdint.h>
-
-// bool	init_frk(t_frk *frk);
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void	*ft_calloc(size_t n_el, size_t el_size)
 {
@@ -33,61 +31,93 @@ static void	*ft_calloc(size_t n_el, size_t el_size)
 
 static t_frk	*bring_the_cutlery(size_t n)
 {
-	t_frk *frks = ft_calloc(n, sizeof(t_frk));
-	size_t i = 0;
-	while(i < n)
+	t_frk	*frks;
+	size_t	i;
+
+	frks = ft_calloc(n, sizeof(t_frk));
+	i = 0;
+	while (i < n)
 		init_frk(&frks[i++]);
-	return frks;
+	return (frks);
 }
 
-void *philo_routine(void *s)
+void	*philo_routine(void *s)
 {
-//	t_philo *my_star = s;
+	//	t_philo *my_star = s;
 	log_animated(s);
-	while(true);
-	return s;
+	while (true)
+		;
+	return (s);
 }
 
-// we could construct all the philo structs first and the start the timer, but fuck it
-size_t	spawn_philos(t_philo_conf *c, t_frk *cutler, pthread_t **philos)
+t_philo	*new_philos(t_philo_conf *c, t_frk *cutler)
 {
-	size_t i = 0;
-	t_philo *new_philo;
+	size_t	i;
+	t_philo	*philos;
 
-	if(!c) return 0;
-	pthread_t	*threads = ft_calloc(c->n_phil, sizeof(pthread_t));
-	if(!threads || !cutler) return 0;
-	*philos = threads;
-	start_timer();
-	while(i < c->n_phil)
+	if (!c || !cutler)
+		return (NULL);
+	philos = ft_calloc(c->n_phil, sizeof(t_philo));
+	if (!philos)
+		return (NULL);
+	i = 0;
+	while (i < c->n_phil)
 	{
-		new_philo = malloc(sizeof(t_philo));
-		if(!new_philo) return (i);
-		new_philo->id = (unsigned char) i;
-		new_philo->left = &cutler[i];
-		new_philo->right = &cutler[(i + 1) % c->n_phil];
-		if (pthread_create(&threads[i], NULL, philo_routine, new_philo))
-			return (free(new_philo), i);
+		philos[i].id = (unsigned char)i + 1;
+		philos[i].c = c;
+		philos[i].left = &cutler[i];
+		philos[i].right = &cutler[(i + 1) % c->n_phil];
+		i++;
+	}
+	return (philos);
+}
+
+size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
+{
+	size_t	i;
+
+	i = 0;
+	start_timer();
+	while (i < c->n_phil)
+	{
+		philos[i].last_meal = read_timer();
+		if (pthread_create(&(philos[i].thread_id), NULL, philo_routine, &(philos[i])))
+			return (i);
 		i++;
 	}
 	return (i);
 }
 
-t_philo_id	find_starved(size_t n, pthread_t *philos)
+// prototype version of the function waits for all started threads
+void	wait4end(t_philo_conf *c, t_philo *philos)
 {
-	while(n--)
+	size_t i = 0;
+
+	// just wait until 1 philo has not eaten long enough
+	while(true)
 	{
-		pthread_join(philos[n], NULL);
+		if(read_timer() - philos[i].last_meal >= c->t2die)
+		{
+			log_died(&philos[i]);
+			return ;
+		}
+		i = (i + 1) % c->n_phil;
 	}
 }
 
-int		run_sim(t_philo_conf *c)
+int	run_sim(t_philo_conf *c)
 {
-	if(!c) return 0;
-	pthread_t *arr_philos;
-	t_frk *frks = bring_the_cutlery(c->n_phil);
-	int living = spawn_philos(c, frks, &arr_philos);
-	join_philos(living, arr_philos);
-	free(arr_philos);
-	return 1;
+	t_philo	*philos;
+	t_frk	*frks;
+
+	if (!c)
+		return (0);
+	frks = bring_the_cutlery(c->n_phil);
+	philos = new_philos(c, frks);
+	if(!philos) return (free(frks), 0);
+	spawn_philos(c, philos);
+	wait4end(c, philos);
+	free(frks);
+	free(philos);
+	return (1);
 }
