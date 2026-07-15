@@ -6,7 +6,7 @@
 /*   By: fkruger <fkruger@student.42vienna.com      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/17 08:10:02 by fkruger           #+#    #+#             */
-/*   Updated: 2026/07/13 07:28:14 by fkruger          ###   ########.fr       */
+/*   Updated: 2026/07/14 20:52:41 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,19 +55,23 @@ bool	init_frk(t_frk *frk);
 bool	pickup(t_frk *frk);
 bool	putdown(t_frk *frk);
 
-/// the PHILOS themselves
-// spawn an philosopher
-//int		spawn_philo(t_philo_id id, t_frk *left, t_frk *right);
 typedef struct s_philo {
 	t_frk	*left;
 	t_frk	*right;
 	t_philo_id	id;
 }	t_philo;
 
+typedef t_timespan long;
+
+// time related functions
+void		start_timer(void);
+t_timespan	read_timer(void);
+
 /// Logging
-void log_forklift(t_philo *philo);
-void log_eating(t_philo *philo);
-void log_thinking(t_philo *philo);
-void log_died(t_philo *philo);
+void	log_animated(t_philo *philo);
+void	log_forklift(t_philo *philo);
+void	log_eating(t_philo *philo);
+void	log_thinking(t_philo *philo);
+void	log_died(t_philo *philo);
 
 #endif
