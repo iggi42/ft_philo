@@ -81,7 +81,8 @@ size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
 	while (i < c->n_phil)
 	{
 		philos[i].last_meal = read_timer();
-		if (pthread_create(&(philos[i].thread_id), NULL, philo_routine, &(philos[i])))
+		if (pthread_create(&(philos[i].thread_id), NULL, philo_routine,
+				&(philos[i])))
 			return (i);
 		i++;
 	}
@@ -91,16 +92,14 @@ size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
 // prototype version of the function waits for all started threads
 void	wait4end(t_philo_conf *c, t_philo *philos)
 {
-	size_t i = 0;
+	size_t	i;
 
+	i = 0;
 	// just wait until 1 philo has not eaten long enough
-	while(true)
+	while (true)
 	{
-		if(read_timer() - philos[i].last_meal >= c->t2die)
-		{
-			log_died(&philos[i]);
-			return ;
-		}
+		if ((read_timer() - philos[i].last_meal) >= c->t2die)
+			return (log_died(&philos[i]));
 		i = (i + 1) % c->n_phil;
 	}
 }
@@ -114,8 +113,10 @@ int	run_sim(t_philo_conf *c)
 		return (0);
 	frks = bring_the_cutlery(c->n_phil);
 	philos = new_philos(c, frks);
-	if(!philos) return (free(frks), 0);
+	if (!philos)
+		return (free(frks), 0);
 	spawn_philos(c, philos);
+	// TODO if not all were properly started to error handling
 	wait4end(c, philos);
 	free(frks);
 	free(philos);
