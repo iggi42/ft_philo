@@ -14,6 +14,7 @@
 #include "philo.h"
 #include "utils.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 
 static t_frk	*bring_the_cutlery(size_t n)
@@ -66,7 +67,7 @@ void	*philo_routine(void *s)
 	meals = 0;
 	me = s;
 	log_animated(s);
-	while (me->c->max_meals > 0 && meals < me->c->max_meals)
+	while (me->c->max_meals <= 0 || meals < me->c->max_meals)
 	{
 		philo_routine_eating(me);
 		meals++;
@@ -74,6 +75,7 @@ void	*philo_routine(void *s)
 		usleep(me->c->t2nap);
 		log_thinking(me);
 	}
+	printf("%ld: [%d] is happy.\n", read_timer(), (int)me->id);
 	return (NULL);
 }
 
@@ -106,6 +108,7 @@ void	wait4end(t_philo_conf *c, t_philo *philos)
 		if ((read_timer() - philos[i].last_meal) >= c->t2die)
 			return (log_died(&philos[i]));
 		i = (i + 1) % c->n_phil;
+		usleep(5);
 	}
 }
 

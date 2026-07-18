@@ -28,14 +28,14 @@ bool	pickup(t_frk *frk)
 	bool	result;
 
 	result = false;
-	if (!pthread_mutex_lock(&frk->mutex))
+	if (pthread_mutex_lock(&frk->mutex))
 		return (false);
 	if (!frk->val)
 	{
 		frk->val = true;
 		result = true;
 	}
-	if (!pthread_mutex_unlock(&frk->mutex))
+	if (pthread_mutex_unlock(&frk->mutex))
 		return (false);
 	return (result);
 }
@@ -45,7 +45,7 @@ bool	putdown(t_frk *frk)
 	bool	result;
 
 	result = false;
-	if (!pthread_mutex_lock(&frk->mutex))
+	if (pthread_mutex_lock(&frk->mutex))
 		return (false);
 	if (frk->val)
 	{
@@ -54,7 +54,7 @@ bool	putdown(t_frk *frk)
 	}
 	else
 		printf("TRYING TO PUT DOWN FORK THAT IS ALREADY DOWN");
-	if (!pthread_mutex_unlock(&frk->mutex))
+	if (pthread_mutex_unlock(&frk->mutex))
 		return (false);
 	return (result);
 }
