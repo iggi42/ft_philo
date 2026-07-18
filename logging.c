@@ -19,6 +19,11 @@ void	log_forklift(t_philo *philo)
 
 void	log_eating(t_philo *philo)
 {
+	printf("%ld: [%d] is eating\n", read_timer(), (int)philo->id);
+}
+
+void	log_sleeping(t_philo *philo)
+{
 	printf("%ld: [%d] is sleeping\n", read_timer(), (int)philo->id);
 }
 

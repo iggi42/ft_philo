@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "philo.h"
+#include "time.h"
 #include "utils.h"
 #include <stdlib.h>
 
@@ -44,10 +45,18 @@ t_timespan	time_since_last_meal(t_philo *p)
 	t_timespan	now;
 
 	now = read_timer();
-	if (!pthread_mutex_lock(&p->last_meal_mutex))
+	if (pthread_mutex_lock(&p->last_meal_mutex))
 		return (-1);
 	last_meal = p->last_meal;
-	if (!pthread_mutex_unlock(&p->last_meal_mutex))
+	if (pthread_mutex_unlock(&p->last_meal_mutex))
 		return (-1);
 	return (now - last_meal);
+}
+
+void set_last_meal2now(t_philo *p)
+{
+	if (p == NULL || pthread_mutex_lock(&p->last_meal_mutex))
+		return;
+	p->last_meal = read_timer();
+	pthread_mutex_unlock(&p->last_meal_mutex);
 }

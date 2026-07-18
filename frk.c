@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 #include "philo.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 // val is true if the fork is in use
 
@@ -51,6 +52,8 @@ bool	putdown(t_frk *frk)
 		frk->val = false;
 		result = true;
 	}
+	else
+		printf("TRYING TO PUT DOWN FORK THAT IS ALREADY DOWN");
 	if (!pthread_mutex_unlock(&frk->mutex))
 		return (false);
 	return (result);

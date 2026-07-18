@@ -43,6 +43,7 @@ typedef struct s_philo
 }						t_philo;
 
 t_philo					*new_philos(t_philo_conf *c, t_frk *cutler);
+void					set_last_meal2now(t_philo *p);
 
 // run a round
 int						run_sim(t_philo_conf *c);
@@ -50,6 +51,7 @@ int						run_sim(t_philo_conf *c);
 void					log_animated(t_philo *philo);
 void					log_forklift(t_philo *philo);
 void					log_eating(t_philo *philo);
+void					log_sleeping(t_philo *philo);
 void					log_thinking(t_philo *philo);
 void					log_died(t_philo *philo);
 
