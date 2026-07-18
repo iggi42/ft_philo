@@ -46,7 +46,7 @@ bool	putdown(t_frk *frk)
 	result = false;
 	if (!pthread_mutex_lock(&frk->mutex))
 		return (false);
-	if(frk->val)
+	if (frk->val)
 	{
 		frk->val = false;
 		result = true;

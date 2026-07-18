@@ -11,23 +11,8 @@
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <pthread.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "utils.h"
 #include <stdlib.h>
-#include <string.h>
-
-static void	*ft_calloc(size_t n_el, size_t el_size)
-{
-	void	*result;
-
-	if (n_el == 0 || el_size == 0 || (SIZE_MAX / n_el) < el_size)
-		return (NULL);
-	el_size *= n_el;
-	result = malloc(el_size);
-	memset(result, 0, el_size);
-	return (result);
-}
 
 static t_frk	*bring_the_cutlery(size_t n)
 {
@@ -47,29 +32,6 @@ void	*philo_routine(void *s)
 	log_animated(s);
 	while (true)
 		;
-	return (s);
-}
-
-t_philo	*new_philos(t_philo_conf *c, t_frk *cutler)
-{
-	size_t	i;
-	t_philo	*philos;
-
-	if (!c || !cutler)
-		return (NULL);
-	philos = ft_calloc(c->n_phil, sizeof(t_philo));
-	if (!philos)
-		return (NULL);
-	i = 0;
-	while (i < c->n_phil)
-	{
-		philos[i].id = (unsigned char)i + 1;
-		philos[i].c = c;
-		philos[i].left = &cutler[i];
-		philos[i].right = &cutler[(i + 1) % c->n_phil];
-		i++;
-	}
-	return (philos);
 }
 
 size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
@@ -116,7 +78,6 @@ int	run_sim(t_philo_conf *c)
 	if (!philos)
 		return (free(frks), 0);
 	spawn_philos(c, philos);
-	// TODO if not all were properly started to error handling
 	wait4end(c, philos);
 	free(frks);
 	free(philos);

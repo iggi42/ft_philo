@@ -18,17 +18,17 @@ bool	ft_isdigit(int c)
 }
 
 // check if input is valid
-bool ft_aisi(char *input)
+bool	ft_aisi(char *input)
 {
-	if(input == NULL || *input == '\0')
-		return false;
-	while(*input)
+	if (input == NULL || *input == '\0')
+		return (false);
+	while (*input)
 	{
-		if(!ft_isdigit(*input))
-			return false;
+		if (!ft_isdigit(*input))
+			return (false);
 		input++;
 	}
-	return true;
+	return (true);
 }
 
 // parse input
