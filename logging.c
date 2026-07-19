@@ -6,31 +6,31 @@
 /*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/13 06:40:08 by fkruger           #+#    #+#             */
-/*   Updated: 2026/07/14 20:34:06 by fkruger          ###   ########.fr       */
+/*   Updated: 2026/07/19 19:50:09 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "philo.h"
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 void io_queue(void (*print_smth)(t_philo *p), t_philo *p)
 {
-	static int is_init;
+	static bool is_init;
 	static pthread_mutex_t	io_mut;
 
-	if(is_init == 0)
+	if(!is_init)
 	{
 		if(!pthread_mutex_init(&io_mut, NULL))
-			is_init = 1;
+			is_init = true;
 		else
 			return;
 	}
 	if(pthread_mutex_lock(&io_mut))
 		return ;
 	print_smth(p);
-	if(pthread_mutex_unlock(&io_mut))
-		return ;
+	pthread_mutex_unlock(&io_mut);
 }
 
 void	log_forklift(t_philo *philo)

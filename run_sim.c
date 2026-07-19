@@ -103,30 +103,52 @@ size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
 	return (i);
 }
 
+
+// these two functions check if a philo happy or starved
+// it is it applyies the requires state change in the data
+// and returns true.
+// if handle_happy detectes an non happy philo it returns false and does nothing.
+bool handle_happy(t_philo *philo)
+{
+	if(philo->last_meal != -1)
+		return false;
+	pthread_detach(philo->thread_id);
+	philo->thread_id = 0;
+	return true;
+}
+
+// if handle_starved detectes an non starved philo it returns false and does nothing.
+bool handle_starved(t_philo *philo)
+{
+	if ((read_timer() - philo->last_meal) < philo->c->t2die)
+		return false;
+	pthread_detach(philo->thread_id);
+	philo->thread_id = 0;
+	return true;
+}
+
 // prototype version of the function waits for all started threads
 void	wait4end(t_philo_conf *c, t_philo *philos)
 {
 	size_t	i;
+	bool still_alive = true;
 
 	i = 0;
 	// just wait until 1 philo has not eaten long enough
 	while (true)
 	{
-		if (philos[i].thread_id == 0)
-		{
-			i = (i + 1) % c->n_phil;
-			continue;
-		}
-		if (pthread_mutex_lock(&philos[i].last_meal_mutex))
+		if(!philos[i].thread_id && pthread_mutex_lock(&philos[i].last_meal_mutex))
 			return;
 		if (philos[i].last_meal == -1)
 		{
-			// pthread_join(philos[i].thread_id, NULL);
 			philos[i].thread_id = 0;
+			i = (i + 1) % c->n_phil;
+			continue;
 		}
 		if ((read_timer() - philos[i].last_meal) >= c->t2die)
 		{
-			pthread_mutex_unlock(&philos[i].last_meal_mutex);
+			if(pthread_mutex_unlock(&philos[i].last_meal_mutex))
+				return;
 			break;
 		}
 		pthread_mutex_unlock(&philos[i].last_meal_mutex);
@@ -149,7 +171,7 @@ int	run_sim(t_philo_conf *c)
 		return (free(frks), 0);
 	spawn_philos(c, philos);
 	wait4end(c, philos);
-	free(frks);
 	free(philos);
+	free(frks);
 	return (1);
 }
