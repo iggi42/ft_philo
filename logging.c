@@ -10,7 +10,28 @@
 /*                                                                            */
 /* ************************************************************************** */
 #include "philo.h"
+#include <bits/pthreadtypes.h>
+#include <pthread.h>
 #include <stdio.h>
+
+void io_queue(void (*print_smth)(t_philo *p), t_philo *p)
+{
+	static int is_init;
+	static pthread_mutex_t	io_mut;
+
+	if(is_init == 0)
+	{
+		if(!pthread_mutex_init(&io_mut, NULL))
+			is_init = 1;
+		else
+			return;
+	}
+	if(pthread_mutex_lock(&io_mut))
+		return ;
+	print_smth(p);
+	if(pthread_mutex_unlock(&io_mut))
+		return ;
+}
 
 void	log_forklift(t_philo *philo)
 {

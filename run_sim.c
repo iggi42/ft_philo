@@ -13,6 +13,8 @@
 #include "frk.h"
 #include "philo.h"
 #include "utils.h"
+#include <bits/pthreadtypes.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -41,13 +43,13 @@ void	philo_routine_eating(t_philo *me)
 	{
 		if (pickup(fs[0]))
 		{
-			log_forklift(me);
+			io_queue(log_forklift, me);
 			if (pickup(fs[1]))
 			{
-				log_forklift(me);
+				io_queue(log_forklift, me);
 				set_last_meal2now(me);
 				has_eaten = true;
-				log_eating(me);
+				io_queue(log_eating, me);
 				usleep(me->c->t2eat);
 				putdown(fs[1]);
 			}
@@ -66,17 +68,21 @@ void	*philo_routine(void *s)
 
 	meals = 0;
 	me = s;
-	log_animated(s);
 	while (me->c->max_meals <= 0 || meals < me->c->max_meals)
 	{
 		philo_routine_eating(me);
 		meals++;
-		log_sleeping(me);
+		io_queue(log_sleeping, me);
 		usleep(me->c->t2nap);
-		log_thinking(me);
+		io_queue(log_thinking, me);
 	}
-	printf("%ld: [%d] is happy.\n", read_timer(), (int)me->id);
+	turn_off_philo(me);
 	return (NULL);
+}
+
+static void ft_phil_void(t_philo *p)
+{
+	(void) p;
 }
 
 size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
@@ -84,6 +90,7 @@ size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
 	size_t	i;
 
 	i = 0;
+	io_queue(ft_phil_void, NULL);
 	start_timer();
 	while (i < c->n_phil)
 	{
@@ -105,11 +112,28 @@ void	wait4end(t_philo_conf *c, t_philo *philos)
 	// just wait until 1 philo has not eaten long enough
 	while (true)
 	{
+		if (philos[i].thread_id == 0)
+		{
+			i = (i + 1) % c->n_phil;
+			continue;
+		}
+		if (pthread_mutex_lock(&philos[i].last_meal_mutex))
+			return;
+		if (philos[i].last_meal == -1)
+		{
+			// pthread_join(philos[i].thread_id, NULL);
+			philos[i].thread_id = 0;
+		}
 		if ((read_timer() - philos[i].last_meal) >= c->t2die)
-			return (log_died(&philos[i]));
+		{
+			pthread_mutex_unlock(&philos[i].last_meal_mutex);
+			break;
+		}
+		pthread_mutex_unlock(&philos[i].last_meal_mutex);
 		i = (i + 1) % c->n_phil;
 		usleep(5);
 	}
+	io_queue(log_died, &philos[i]);
 }
 
 int	run_sim(t_philo_conf *c)

@@ -60,3 +60,11 @@ void set_last_meal2now(t_philo *p)
 	p->last_meal = read_timer();
 	pthread_mutex_unlock(&p->last_meal_mutex);
 }
+
+void turn_off_philo(t_philo *p)
+{
+	if (p == NULL || pthread_mutex_lock(&p->last_meal_mutex))
+		return;
+	p->last_meal = -1;
+	pthread_mutex_unlock(&p->last_meal_mutex);
+}
