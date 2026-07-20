@@ -15,6 +15,7 @@
 #include "utils.h"
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -127,35 +128,45 @@ bool handle_starved(t_philo *philo)
 	return true;
 }
 
+typedef enum e_philo_event {
+	NO_EVENT = 0,
+	DEAD = 1,
+	ALL_HAPPY = -1
+} t_philo_event ;
+
+t_philo_event phil_iterate(t_philo_conf *c, t_philo *philos)
+{
+	size_t	i;
+	bool all_happy;
+
+	all_happy = true;
+	i = 0;
+	while(i < c->n_phil)
+	{
+		if(philos[i].thread_id != 0)
+		{
+			all_happy = false;
+			pthread_mutex_lock(&philos[i].last_meal_mutex); // TODO error handling
+			if(handle_starved(&philos[i]))
+				return (pthread_mutex_unlock(&philos[i].last_meal_mutex), DEAD);
+			if(c->max_meals >= 0)
+				handle_happy(&philos[i]);
+			pthread_mutex_unlock(&philos[i].last_meal_mutex); // TODO error handling
+		}
+		i++;
+	}
+	if (all_happy)
+		return ALL_HAPPY;
+	return NO_EVENT;
+}
+
 // prototype version of the function waits for all started threads
 void	wait4end(t_philo_conf *c, t_philo *philos)
 {
-	size_t	i;
-	bool still_alive = true;
+	t_philo_event result = NO_EVENT;
 
-	i = 0;
-	// just wait until 1 philo has not eaten long enough
-	while (true)
-	{
-		if(!philos[i].thread_id && pthread_mutex_lock(&philos[i].last_meal_mutex))
-			return;
-		if (philos[i].last_meal == -1)
-		{
-			philos[i].thread_id = 0;
-			i = (i + 1) % c->n_phil;
-			continue;
-		}
-		if ((read_timer() - philos[i].last_meal) >= c->t2die)
-		{
-			if(pthread_mutex_unlock(&philos[i].last_meal_mutex))
-				return;
-			break;
-		}
-		pthread_mutex_unlock(&philos[i].last_meal_mutex);
-		i = (i + 1) % c->n_phil;
-		usleep(5);
-	}
-	io_queue(log_died, &philos[i]);
+	while (result == NO_EVENT)
+		result = phil_iterate(c, philos);
 }
 
 int	run_sim(t_philo_conf *c)
