@@ -12,6 +12,20 @@
 
 #include "philo.h"
 #include "utils.h"
+#include <stdio.h>
+
+void	print_config(t_philo_conf *c)
+{
+	if (c == NULL)
+		printf("config: [NULL]\n");
+	else
+		printf("config.n_phil = %zu\nconfig.t2die = %ld\nconfig.t2eat = %ld\nconfig.t2nap = %ld\nconfig.max_meals = %d\n",
+			c->n_phil,
+			c->t2die,
+			c->t2eat,
+			c->t2nap,
+			c->max_meals);
+}
 
 // return true if all parameters were successfully parsed
 // return false on parsing errors and so on.

@@ -16,8 +16,8 @@
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 static t_frk	*bring_the_cutlery(size_t n)
@@ -51,13 +51,14 @@ void	philo_routine_eating(t_philo *me)
 				set_last_meal2now(me);
 				has_eaten = true;
 				io_queue(log_eating, me);
-				usleep(me->c->t2eat);
+				usleep(me->c->t2eat * 1000);
 				putdown(fs[1]);
 			}
 			putdown(fs[0]);
-			if(has_eaten) return;
+			if (has_eaten)
+				return ;
 		}
-		usleep(42);
+		usleep(200);
 	}
 }
 
@@ -74,16 +75,16 @@ void	*philo_routine(void *s)
 		philo_routine_eating(me);
 		meals++;
 		io_queue(log_sleeping, me);
-		usleep(me->c->t2nap);
+		usleep(me->c->t2nap * 1000);
 		io_queue(log_thinking, me);
 	}
 	turn_off_philo(me);
 	return (NULL);
 }
 
-static void ft_phil_void(t_philo *p)
+static void	ft_phil_void(t_philo *p)
 {
-	(void) p;
+	(void)p;
 }
 
 size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
@@ -104,67 +105,70 @@ size_t	spawn_philos(t_philo_conf *c, t_philo *philos)
 	return (i);
 }
 
-
 // these two functions check if a philo happy or starved
 // it is it applyies the requires state change in the data
 // and returns true.
 // if handle_happy detectes an non happy philo it returns false and does nothing.
-bool handle_happy(t_philo *philo)
+bool	handle_happy(t_philo *philo)
 {
-	if(philo->last_meal != -1)
-		return false;
+	if (philo->last_meal != -1)
+		return (false);
 	pthread_detach(philo->thread_id);
 	philo->thread_id = 0;
-	return true;
+	return (true);
 }
 
 // if handle_starved detectes an non starved philo it returns false and does nothing.
-bool handle_starved(t_philo *philo)
+bool	handle_starved(t_philo *philo)
 {
 	if ((read_timer() - philo->last_meal) < philo->c->t2die)
-		return false;
+		return (false);
 	pthread_detach(philo->thread_id);
 	philo->thread_id = 0;
-	return true;
+	return (true);
 }
 
-typedef enum e_philo_event {
+typedef enum e_philo_event
+{
 	NO_EVENT = 0,
 	DEAD = 1,
 	ALL_HAPPY = -1
-} t_philo_event ;
+}				t_philo_event;
 
-t_philo_event phil_iterate(t_philo_conf *c, t_philo *philos)
+t_philo_event	phil_iterate(t_philo_conf *c, t_philo *philos)
 {
-	size_t	i;
-	bool all_happy;
+	size_t			i;
+	t_philo_event	result;
 
-	all_happy = true;
+	result = ALL_HAPPY;
 	i = 0;
-	while(i < c->n_phil)
+	while (i < c->n_phil)
 	{
-		if(philos[i].thread_id != 0)
+		if (philos[i].thread_id != 0)
 		{
-			all_happy = false;
-			pthread_mutex_lock(&philos[i].last_meal_mutex); // TODO error handling
-			if(handle_starved(&philos[i]))
-				return (pthread_mutex_unlock(&philos[i].last_meal_mutex), DEAD);
-			if(c->max_meals >= 0)
+			result = NO_EVENT;
+			pthread_mutex_lock(&philos[i].last_meal_mutex);
+				// TODO error handling
+			if (handle_starved(&philos[i]))
+				result = (io_queue(log_died, &philos[i]), DEAD);
+			if (c->max_meals >= 0)
 				handle_happy(&philos[i]);
-			pthread_mutex_unlock(&philos[i].last_meal_mutex); // TODO error handling
+			pthread_mutex_unlock(&philos[i].last_meal_mutex);
+				// TODO error handling
+			if (result == DEAD)
+				return (result);
 		}
 		i++;
 	}
-	if (all_happy)
-		return ALL_HAPPY;
-	return NO_EVENT;
+	return (result);
 }
 
 // prototype version of the function waits for all started threads
 void	wait4end(t_philo_conf *c, t_philo *philos)
 {
-	t_philo_event result = NO_EVENT;
+	t_philo_event	result;
 
+	result = NO_EVENT;
 	while (result == NO_EVENT)
 		result = phil_iterate(c, philos);
 }

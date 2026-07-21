@@ -53,18 +53,18 @@ t_timespan	time_since_last_meal(t_philo *p)
 	return (now - last_meal);
 }
 
-void set_last_meal2now(t_philo *p)
+void	set_last_meal2now(t_philo *p)
 {
 	if (p == NULL || pthread_mutex_lock(&p->last_meal_mutex))
-		return;
+		return ;
 	p->last_meal = read_timer();
 	pthread_mutex_unlock(&p->last_meal_mutex);
 }
 
-void turn_off_philo(t_philo *p)
+void	turn_off_philo(t_philo *p)
 {
 	if (p == NULL || pthread_mutex_lock(&p->last_meal_mutex))
-		return;
+		return ;
 	p->last_meal = -1;
 	pthread_mutex_unlock(&p->last_meal_mutex);
 }
